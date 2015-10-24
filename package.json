@@ -1,0 +1,25 @@
+{
+  "name": "backtrack",
+  "version": "0.0.1",
+  "description": "SMS server for backtrack.",
+  "main": "app/server.js",
+  "scripts": {
+    "test": "mocha --recursive",
+    "start": "node app/server.js",
+    "debug": "node-debug app/server.js",
+    "startdebug": "node --debug app/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "Levi Bostian <levi.bostian@gmail.com>",
+  "dependencies": {
+    "express": "^4.13.1",
+    "pg": "^4.4.3",
+    "twilio": "^2.5.1"
+  },
+  "devDependencies": {
+    "node-inspector": "^0.10.2"
+  }
+}
