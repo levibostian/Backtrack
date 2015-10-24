@@ -1,7 +1,7 @@
 var db = require('../db').db;
 
 exports.doesOwnerBacktrackIdExist = function(ownerBacktrackId) {
-    db.query('SELECT count(id) FROM owners WHERE backtrack_id=$1', [ownerBacktrackId], function(err, result) {
+    db.query('SELECT count(id) FROM owners WHERE backtrack_id="$1"', [ownerBacktrackId], function(err, result) {
         if (err) {
             throw err;
         }
@@ -11,7 +11,7 @@ exports.doesOwnerBacktrackIdExist = function(ownerBacktrackId) {
 };
 
 exports.getOwnerByBacktrackId = function(ownerBacktrackId) {
-    db.query('SELECT * FROM owners WHERE backtrack_id=$1', [ownerBacktrackId], function(err, result) {
+    db.query('SELECT * FROM owners WHERE backtrack_id="$1"', [ownerBacktrackId], function(err, result) {
         if (err) {
             throw err;
         }
