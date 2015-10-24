@@ -30,7 +30,8 @@ app.get('/incoming',
                 responseMessage = "Awesome! Thank you for reporting this lost item. Text back the 4 digit ID found on the item.";
                 break;
             case 2:
-                var backtrackId = req.query.Body;
+                var backtrackId = req.query.Body.toUpperCase();
+                console.log('' + backtrackId);
                 if (doesOwnerBacktrackIdExist(backtrackId)) {
                     responseMessage = "Time to return the item. Text back directions for the owner on where you are leaving the item.";
                     res.cookie('ownerBacktrackId', backtrackId);
@@ -59,6 +60,7 @@ app.get('/incoming',
         });
 
 function doesOwnerBacktrackIdExist(ownerBacktrackId) {
+    console.log('does? ' + ownersModal.doesOwnerBacktrackIdExist(ownerBacktrackId));
     return ownersModal.doesOwnerBacktrackIdExist(ownerBacktrackId);
 }
 
