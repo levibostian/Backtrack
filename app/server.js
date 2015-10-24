@@ -28,46 +28,58 @@ app.get('/incoming',
             switch (currentStep) {
             case 1:
                 responseMessage = "Awesome! Thank you for reporting this lost item. Text back the 4 digit ID found on the item.";
+                sendResponseText(responseMessage, currentStep, res);
                 break;
             case 2:
                 var backtrackId = req.query.Body.toUpperCase();
-                console.log('' + backtrackId);
-                if (doesOwnerBacktrackIdExist(backtrackId)) {
-                    responseMessage = "Time to return the item. Text back directions for the owner on where you are leaving the item.";
-                    res.cookie('ownerBacktrackId', backtrackId);
-                } else {
-                    responseMessage = "Hmmm...the ID you entered does not exist. Try entering it again.";
-                    currentStep = 1;
-                }
+                doesOwnerBacktrackIdExist(backtrackId, function(doesExist) {
+                    if (doesExist) {
+                        responseMessage = "Time to return the item. Text back directions for the owner on where you are leaving the item.";
+                        res.cookie('ownerBacktrackId', backtrackId);     
+                    } else {
+                        responseMessage = "Hmmm...the ID you entered does not exist. Try entering it again.";
+                        currentStep = 1;
+                    }
+
+                    sendResponseText(responseMessage, currentStep, res);
+                });
                 break;
             case 3:
                 var directions = req.query.Body;
-                sendDirectionsToOwner(directions, cookies.ownerBacktrackId);
-                responseMessage = "The owner has been notified. Thank you for using Backtrack! Goodbye!";
-                currentStep = 0;
+                sendDirectionsToOwner(directions, cookies.ownerBacktrackId, function() {
+                    responseMessage = "The owner has been notified. Thank you for using Backtrack! Goodbye!";
+                    currentStep = 0;
+
+                    sendResponseText(responseMessage, currentStep, res);
+                });
                 break;
             default:
                 currentStep = 0;
                 break;
-            }
-            
-            var response = new twilio.TwimlResponse();
-            response.sms(responseMessage);
-            res.cookie('previousStep', currentStep);
-            res.send(response.toString(), {
-                'Content-Type':'text/xml'
-            }, 200);
+            }            
         });
 
-function doesOwnerBacktrackIdExist(ownerBacktrackId) {
-    console.log('does? ' + ownersModal.doesOwnerBacktrackIdExist(ownerBacktrackId));
-    return ownersModal.doesOwnerBacktrackIdExist(ownerBacktrackId);
+function doesOwnerBacktrackIdExist(ownerBacktrackId, done) {
+    ownersModal.doesOwnerBacktrackIdExist(ownerBacktrackId, function(doesExist) {
+        return done(doesExist);
+    });
 }
 
-function sendDirectionsToOwner(directions, ownerBacktrackId) {
-    var owner = ownersModal.getOwnerByBacktrackId(ownerBacktrackId);
+function sendResponseText(responseMessage, currentStep, expressRes) {
+    var response = new twilio.TwimlResponse();
+    response.sms(responseMessage);
+    expressRes.cookie('previousStep', currentStep);
+    expressRes.send(response.toString(), {
+        'Content-Type':'text/xml'
+    }, 200);
+}
 
-    sendText(directions, owner.phone_num);
+function sendDirectionsToOwner(directions, ownerBacktrackId, done) {
+    ownersModal.getOwnerByBacktrackId(ownerBacktrackId, function(owner) {
+        sendText(directions, owner.phone_num);
+
+        done();
+    });
 }
 
 function sendText(message, phone_num) {
