@@ -15,6 +15,7 @@
   },
   "author": "Levi Bostian <levi.bostian@gmail.com>",
   "dependencies": {
+    "body-parser": "^1.14.1",
     "cookie-parser": "^1.4.0",
     "express": "^4.13.1",
     "pg": "^4.4.3",

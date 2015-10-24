@@ -2,6 +2,7 @@ var express = require('express');
 var path = require('path');
 var twilio = require('twilio');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 
 var twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
 var twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
@@ -25,13 +26,22 @@ app.get('/incoming',
 
             switch (currentStep) {
             case 1:
-                responseMessage = "you're on step 1";
+                responseMessage = "Awesome! Thank you for reporting this lost item. Text back the 4 digit ID found on the item.";
                 break;
             case 2:
-                responseMessage = "you're on step 2";
+                var accessId = req.query.Body;
+                if (doesOwnerAccessIdExist(accessId)) {
+                    responseMessage = "Time to return the item. Text back directions for the owner on where you are leaving the item.";
+                    res.cookie('ownerAccessId', accessId);
+                } else {
+                    responseMessage = "Hmmm...the ID you entered does not exist. Try entering it again.";
+                    currentStep = 1;
+                }
                 break;
             case 3:
-                responseMessage = "you're on step 3. All done. Thanks!";
+                var directions = req.query.Body;
+                sendDirectionsToOwner(directions, cookies.ownerAccessId);        
+                responseMessage = "The owner has been notified. Thank you for using Backtrack!";
                 currentStep = 0;
                 break;
             default:
@@ -46,6 +56,18 @@ app.get('/incoming',
                 'Content-Type':'text/xml'
             }, 200);
         });
+
+function doesOwnerAccessIdExist(ownerDeviceId) {
+    return true;
+}
+
+function sendDirectionsToOwner(directions, ownerId) {
+    var owner = findOwnerByDeviceId(ownerId);
+}
+
+function findOwnerByDeviceId(ownerDeviceId) {
+    
+}
 
 app.get('/',
         function(req, res) {            
