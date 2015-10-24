@@ -1,40 +1,47 @@
 var express = require('express');
 var path = require('path');
 var twilio = require('twilio');
+var cookieParser = require('cookie-parser');
 
 var twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
 var twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-
 var fromPhoneNum = process.env.FROM_PHONE_NUM;
 var toPhoneNum = process.env.TO_PHONE_NUM;
-
 var client = require('twilio')(twilioAccountSid, twilioAuthToken);
 
 var app = express();
 app.use(express.static(__dirname + '/public')); // starting static fileserver
+app.use(cookieParser());
 
 app.get('/incoming',
         function(req, res) {
-            var previousStep = req.cookie.previousStep;
-            var responseMessage = "";
+            var cookies = req.cookies;
+            var previousStep = 0;
+            var responseMessage;            
+            if (cookies != null) {
+                previousStep = parseInt(cookies.previousStep, 10);
+            }
+            var currentStep = previousStep + 1;
 
-            if (!previousStep) {
+            switch (currentStep) {
+            case 1:
                 responseMessage = "you're on step 1";
-                previousStep = 0;
-            } else {
-                switch (previousStep) {
-                case 1:
-                    responseMessage = "you're on step 2";
-                    break;
-                case 2:
-                    responseMessage = "you're on step 3. All done. Thanks!";
-                    break;
-                }
+                break;
+            case 2:
+                responseMessage = "you're on step 2";
+                break;
+            case 3:
+                responseMessage = "you're on step 3. All done. Thanks!";
+                currentStep = 0;
+                break;
+            default:
+                currentStep = 0;
+                break;
             }
             
             var response = new twilio.TwimlResponse();
             response.sms(responseMessage);
-            res.cookie('previousStep', previousStep + 1);
+            res.cookie('previousStep', currentStep);
             res.send(response.toString(), {
                 'Content-Type':'text/xml'
             }, 200);
