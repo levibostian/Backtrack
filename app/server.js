@@ -20,7 +20,7 @@ app.get('/incoming',
             var cookies = req.cookies;
             var previousStep = 0;
             var responseMessage;            
-            if (cookies != null) {
+            if (cookies.previousStep != null) {
                 previousStep = parseInt(cookies.previousStep, 10);
             }
             var currentStep = previousStep + 1;
