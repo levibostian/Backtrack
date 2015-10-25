@@ -4,12 +4,14 @@ var twilio = require('twilio');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var ownersModal = require('./modal').owners;
+var googleSpreadsheet = require("google-spreadsheet");
 
 var twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
 var twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
 var fromPhoneNum = process.env.FROM_PHONE_NUM;
 var toPhoneNum = process.env.TO_PHONE_NUM;
 var client = require('twilio')(twilioAccountSid, twilioAuthToken);
+var ownersSheet = new googleSpreadsheet(process.env.GOOGLE_SHEET_ID);
 
 var app = express();
 app.use(express.static(__dirname + '/public')); // starting static fileserver
@@ -60,8 +62,10 @@ app.get('/incoming',
         });
 
 function doesOwnerBacktrackIdExist(ownerBacktrackId, done) {
-    ownersModal.doesOwnerBacktrackIdExist(ownerBacktrackId, function(doesExist) {
-        return done(doesExist);
+    ownersSheet.getRows(1, {
+        query: "backtrackid==" + ownerBacktrackId.toUpperCase()
+    }, function(err, rows){
+        return done(rows.length > 0);
     });
 }
 
@@ -75,8 +79,10 @@ function sendResponseText(responseMessage, currentStep, expressRes) {
 }
 
 function sendDirectionsToOwner(directions, ownerBacktrackId, done) {
-    ownersModal.getOwnerByBacktrackId(ownerBacktrackId, function(owner) {
-        sendText(directions, owner.phone_num);
+    ownersSheet.getRows(1, {
+        query: "backtrackid==" + ownerBacktrackId.toUpperCase()
+    }, function(err, rows){
+        sendText(directions, rows[0].phonenumber);
 
         done();
     });
@@ -85,7 +91,7 @@ function sendDirectionsToOwner(directions, ownerBacktrackId, done) {
 function sendText(message, phone_num) {
     client.messages.create({
         body: "A lost item has been reported on Backtrack. Directions: " + message,
-        to: phone_num,
+        to: "+1" + phone_num,
         from: fromPhoneNum
     }, function(err, message) {
         if (err) {

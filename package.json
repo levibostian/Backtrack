@@ -18,6 +18,7 @@
     "body-parser": "^1.14.1",
     "cookie-parser": "^1.4.0",
     "express": "^4.13.1",
+    "google-spreadsheet": "^1.0.1",
     "pg": "^4.4.3",
     "twilio": "^2.5.1"
   },
