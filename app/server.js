@@ -49,7 +49,7 @@ app.get('/incoming',
             case 3:
                 var directions = req.query.Body;
                 sendDirectionsToOwner(directions, cookies.ownerBacktrackId, function() {
-                    responseMessage = "The owner has been notified. Thank you for using Backtrack! Goodbye!";
+                    responseMessage = "The owner has been notified. Thank you for using BackTrack! Goodbye!";
                     currentStep = 0;
 
                     sendResponseText(responseMessage, currentStep, res);
